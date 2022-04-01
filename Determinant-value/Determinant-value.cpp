@@ -4,10 +4,10 @@
 #include <string>
 
 using namespace std;
+double det = 1;
 void swap(double** p, int* tx, int* ty, int* m, int* n) {
     double tmp;
     int tmpx = *tx, tmpy = *ty;
-sw:
     for (int i = tmpy; i < *m; i++) {
         if (p[i][tmpx] != 0) {
             for (int s = tmpx; s < *n; s++) {
@@ -15,26 +15,11 @@ sw:
                 p[i][s] = p[*ty][s];
                 p[*ty][s] = tmp;
             }
+            det = det * -1;
             return;
         }
     }
-    tmpx++;
-    *tx = *tx + 1;
-    if (tmpx != *n && tmpy != *m) {
-        goto sw;
-    }
-}
-void up(double** p, int* tx, int* ty, int* m, int* n) {
-    int tmpx = *tx, tmpy = *ty;
-    double num;
-    for (int i = tmpy - 1; i >= 0; i--) {
-        num = p[i][tmpx];
-        if (num != 0) {
-            for (int j = tmpx; j < *n; j++) {
-                p[i][j] = p[i][j] + (p[tmpy][j] * -1 * num);
-            }
-        }
-    }
+    det = 0;
 }
 void down(double** p, int* tx, int* ty, int* m, int* n) {
     int tmpx = *tx, tmpy = *ty;
@@ -50,9 +35,10 @@ void down(double** p, int* tx, int* ty, int* m, int* n) {
 }
 void operation(double** p, int* tx, int* ty, int* m, int* n) {
     int tmpy = *ty;
-    double leader = p[tmpy][*tx];
+    int tmpx = *tx;
+    double leader = p[tmpy][tmpx];
     if (leader != 0) {
-        for (int i = *tx; i < *n; i++) { //取得前導1
+        for (int i = tmpx; i < *n; i++) { //取得前導1
             if (leader != 1) {
                 p[tmpy][i] = p[tmpy][i] / leader;
             }
@@ -60,18 +46,12 @@ void operation(double** p, int* tx, int* ty, int* m, int* n) {
                 break;
             }
         }
-        up(p, tx, ty, m, n); down(p, tx, ty, m, n);
+        det = det * leader;
+        down(p, tx, ty, m, n);
     }
     *ty = *ty + 1; *tx = *tx + 1;
 }
-void print(double** p, int m, int n) {
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
-            cout << setw(2) << p[i][j] << " ";
-        }
-        cout << endl;
-    }
-}
+
 void openfile(int* m, int* n) {
     ifstream ifs;
     string buffer;
@@ -120,6 +100,7 @@ int main()
                 buffer.erase(0, pos + space_delimiter.length());
                 j++;
             }
+            matrix[i][j] = stof(buffer.substr(0, pos));
             i++;
         }
         ifs.close();
@@ -132,9 +113,10 @@ int main()
             swap(*&matrix, &x, &y, &m, &n);
         }
         operation(*&matrix, &x, &y, &m, &n);
-        if (x + 1 > n || y + 1 > m) {
+        if (x + 1 > n || y + 1 > m || det == 0) {
             break;
         }
     }
-    print(*&matrix, m, n);
+
+    cout << "det = " << det;
 }
